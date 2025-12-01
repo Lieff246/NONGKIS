@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NONGKIS</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h2>🏖️ NONGKIS Admin</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Beranda</a>
+                <a href="admin-dashboard.html" class="nav-link active">Admin</a>
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Admin Dashboard 👑</h1>
+                <p>Kelola tempat dan booking</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalPlaces">0</span>
+                        <span class="stat-label">Total Tempat</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalBookings">0</span>
+                        <span class="stat-label">Total Booking</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Place Management -->
+            <div class="place-management">
+                <h3>🏢 Kelola Tempat</h3>
+                
+                <div class="place-form">
+                    <h4 id="formTitle">Tambah Tempat Baru</h4>
+                    <form id="placeForm">
+                        <input type="hidden" id="editPlaceId">
+                        <div class="form-group">
+                            <input type="text" id="placeName" placeholder="Nama Tempat" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="placeLocation" placeholder="Lokasi" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="placeDescription" placeholder="Deskripsi" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="auth-button" id="submitBtn">Tambah Tempat</button>
+                        <button type="button" class="auth-button" id="cancelBtn" onclick="cancelEdit()" style="display:none; background:#6c757d;">Batal</button>
+                    </form>
+                </div>
+
+                <div id="placesList" class="places-list">
+                    <div class="loading">🔄 Memuat tempat...</div>
+                </div>
+            </div>
+
+            <!-- Booking Management -->
+            <div class="booking-management">
+                <h3>📅 Kelola Booking</h3>
+                <div class="booking-actions">
+                    <button onclick="loadBookings()" class="refresh-btn">🔄 Refresh</button>
+                </div>
+                <div id="bookingsList" class="bookings-container">
+                    <div class="loading">🔄 Memuat booking...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

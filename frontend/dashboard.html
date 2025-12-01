@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NONGKIS</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h2>🏖️ NONGKIS</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Beranda</a>
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Selamat Datang, <span id="userName">User</span>! 👋</h1>
+                <p>Mau nongkrong dimana hari ini?</p>
+            </div>
+
+            <div class="user-info">
+                <h3>📊 Profil Anda</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Nama:</strong>
+                        <span id="infoName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Email:</strong>
+                        <span id="infoEmail">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Role:</strong>
+                        <span id="infoRole">User</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-bookings">
+                <h3>📅 Booking Saya</h3>
+                <div class="booking-actions">
+                    <button onclick="loadUserBookings()" class="refresh-btn">🔄 Refresh Data</button>
+                </div>
+                <div id="userBookings" class="bookings-container">
+                    <div class="loading">🔄 Memuat data booking...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 NONGKIS - Tempat Nongkrong Asik</p>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
