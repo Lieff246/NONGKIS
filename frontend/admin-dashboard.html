@@ -45,22 +45,9 @@
             <div class="place-management">
                 <h3>🏢 Kelola Tempat</h3>
                 
-                <div class="place-form">
-                    <h4 id="formTitle">Tambah Tempat Baru</h4>
-                    <form id="placeForm">
-                        <input type="hidden" id="editPlaceId">
-                        <div class="form-group">
-                            <input type="text" id="placeName" placeholder="Nama Tempat" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="placeLocation" placeholder="Lokasi" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea id="placeDescription" placeholder="Deskripsi" rows="3"></textarea>
-                        </div>
-                        <button type="submit" class="auth-button" id="submitBtn">Tambah Tempat</button>
-                        <button type="button" class="auth-button" id="cancelBtn" onclick="cancelEdit()" style="display:none; background:#6c757d;">Batal</button>
-                    </form>
+                <div class="place-tabs">
+                    <button class="tab-button active" onclick="showApprovedPlaces()">✅ Tempat Approved</button>
+                    <button class="tab-button" onclick="showPendingPlaces()">⏳ Pending Approval</button>
                 </div>
 
                 <div id="placesList" class="places-list">
@@ -68,9 +55,9 @@
                 </div>
             </div>
 
-            <!-- Booking Management -->
+            <!-- Booking Monitoring -->
             <div class="booking-management">
-                <h3>📅 Kelola Booking</h3>
+                <h3>📅 Monitor Booking</h3>
                 <div class="booking-actions">
                     <button onclick="loadBookings()" class="refresh-btn">🔄 Refresh</button>
                 </div>

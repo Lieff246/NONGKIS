@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - NONGKIS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h2>🏢 NONGKIS Owner</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Beranda</a>
+                <a href="owner-dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Selamat Datang, <span id="ownerName">Owner</span>! 🏢</h1>
+                <p>Kelola tempat nongkrong Anda</p>
+            </div>
+
+            <div class="user-info">
+                <h3>📊 Profil Owner</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Nama:</strong>
+                        <span id="infoName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Email:</strong>
+                        <span id="infoEmail">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Role:</strong>
+                        <span id="infoRole">Owner</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h3>🚀 Menu Owner</h3>
+                <div class="action-buttons">
+                    <button class="action-button" onclick="showAddPlace()">
+                        <span>➕</span>
+                        <span>Tambah Tempat</span>
+                    </button>
+                    <button class="action-button" onclick="showMyPlaces()">
+                        <span>🏢</span>
+                        <span>Tempat Saya</span>
+                    </button>
+                    <button class="action-button" onclick="showBookings()">
+                        <span>📅</span>
+                        <span>Booking Masuk</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Placeholder untuk fitur selanjutnya -->
+            <div class="owner-content">
+                <h3>📋 Status Tempat</h3>
+                <div id="ownerPlaces" class="places-container">
+                    <div class="no-data">Belum ada tempat yang ditambahkan</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 NONGKIS - Owner Dashboard</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/interactive-maps.js"></script>
+    <script src="js/owner-dashboard.js"></script>
+</body>
+</html>

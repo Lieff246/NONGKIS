@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - NONGKIS</title>
+    <title>Daftar Owner - NONGKIS</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h2>🏖️ NONGKIS</h2>
-                <p>Masuk ke akun Anda</p>
+                <h2>🏢 NONGKIS Owner</h2>
+                <p>Daftar sebagai pemilik tempat</p>
             </div>
             
-            <form class="auth-form" id="loginForm">
+            <form class="auth-form" id="ownerForm">
+                <div class="form-group">
+                    <label for="name">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
@@ -22,64 +27,53 @@
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required minlength="6">
                 </div>
                 
                 <button type="submit" class="auth-button">
-                    🔐 Masuk
+                    🏢 Daftar sebagai Owner
                 </button>
             </form>
             
             <div class="auth-links">
-                <p>Belum punya akun?</p>
-                <a href="register.html">Daftar di sini</a>
+                <p>Sudah punya akun?</p>
+                <a href="login.html">Masuk di sini</a>
                 <br><br>
-                <a href="index.html">← Kembali ke Beranda</a>
+                <a href="register.html">← Daftar sebagai User biasa</a>
             </div>
         </div>
     </div>
 
     <script src="js/api.js"></script>
     <script>
-        // Handle login form
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        // Handle owner registration - SAMA seperti register biasa, tapi role = 'owner'
+        document.getElementById('ownerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
             
             try {
-                submitBtn.textContent = '🔄 Masuk...';
+                submitBtn.textContent = '🔄 Mendaftar...';
                 submitBtn.disabled = true;
                 
                 const formData = new FormData(this);
-                const credentials = {
+                const ownerData = {
+                    name: formData.get('name'),
                     email: formData.get('email'),
-                    password: formData.get('password')
+                    password: formData.get('password'),
+                    role: 'owner'  // INI YANG BEDA - set role sebagai owner
                 };
                 
-                const result = await API.login(credentials);
+                const result = await API.register(ownerData);
                 
-                if (result.token || result.user) {
-                    // Save user data and token
-                    localStorage.setItem('nongkis_user', JSON.stringify(result.user));
-                    if (result.token) {
-                        localStorage.setItem('nongkis_token', result.token);
-                    }
-                    
-                    showNotification('✅ Login berhasil!', 'success');
-                    
+                if (result.message && result.message.includes('successfully')) {
+                    showNotification('✅ Pendaftaran Owner berhasil!', 'success');
                     setTimeout(() => {
-                        if (result.user.role === 'admin') {
-                            window.location.href = 'admin-dashboard.html';
-                        } else if (result.user.role === 'owner') {
-                            window.location.href = 'owner-dashboard.html';
-                        } else {
-                            window.location.href = 'dashboard.html';
-                        }
-                    }, 1000);
+                        window.location.href = 'login.html';
+                    }, 1500);
                 } else {
-                    showNotification('❌ ' + (result.message || 'Login gagal'), 'error');
+                    showNotification('❌ ' + (result.message || 'Pendaftaran gagal'), 'error');
                 }
                 
             } catch (error) {
@@ -90,7 +84,7 @@
             }
         });
 
-        // Show notification function
+        // Show notification function - SAMA seperti yang lain
         function showNotification(message, type = 'info') {
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();

@@ -99,7 +99,7 @@ class API {
         }
     }
 
-    // Get all bookings
+    // Get all bookings (admin)
     static async getBookings() {
         try {
             const response = await fetch(`${API_URL}/bookings`);
@@ -107,6 +107,18 @@ class API {
             return await response.json();
         } catch (error) {
             console.error('Error getting bookings:', error);
+            return [];
+        }
+    }
+
+    // Get owner bookings
+    static async getOwnerBookings(ownerId) {
+        try {
+            const response = await fetch(`${API_URL}/bookings/owner/${ownerId}`);
+            if (!response.ok) throw new Error('Failed to fetch owner bookings');
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting owner bookings:', error);
             return [];
         }
     }
@@ -127,13 +139,18 @@ class API {
         }
     }
 
-    // Update booking status (admin only) - Note: Backend doesn't support this yet
+    // Update booking status (admin only)
     static async updateBookingStatus(bookingId, status, token) {
         try {
-            // Since backend doesn't have update booking status endpoint,
-            // we'll just return success for now
-            console.log(`Would update booking ${bookingId} to status ${status}`);
-            return { message: `Booking status updated to ${status}` };
+            const response = await fetch(`${API_URL}/bookings/${bookingId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+            return await response.json();
         } catch (error) {
             console.error('Error updating booking status:', error);
             return { success: false, message: 'Network error' };

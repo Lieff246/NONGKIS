@@ -1,69 +1,92 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NONGKIS - Tempat Nongkrong Asik</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  </head>
+  <body>
     <!-- Navigation -->
     <header>
-        <nav class="navbar">
-            <div class="nav-brand">
-                <h2>🏖️ NONGKIS</h2>
-            </div>
-            <div class="nav-menu" id="navMenu">
-                <a href="index.html" class="nav-link active">Beranda</a>
-                <a href="#tempat" class="nav-link">Tempat</a>
-                <a href="login.html" class="nav-link">Login</a>
-                <a href="register.html" class="nav-link">Daftar</a>
-            </div>
-        </nav>
+      <nav class="navbar">
+        <div class="nav-brand">
+          <h2>🏖️ NONGKIS</h2>
+        </div>
+        <div class="nav-menu" id="navMenu">
+          <!-- Navigation will be updated by JavaScript -->
+        </div>
+      </nav>
     </header>
-
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>Temukan Tempat Nongkrong Terbaik di Kota Palu</h1>
-            <p>Untuk Nongkrong Santai, Mengerjakan Tugas, atau Diskusi Kelompok</p>
-            <a href="register.html" class="cta-button">Mulai Sekarang</a>
+      <div class="hero-content">
+        <!-- Time Widget -->
+        <div class="time-widget" id="timeWidget">
+          <div class="time-loading">🔄 Memuat waktu Palu...</div>
         </div>
+
+        <h1>Temukan Tempat Nongkrong Terbaik di Kota Palu</h1>
+        <p>Untuk Nongkrong Santai, Mengerjakan Tugas, atau Diskusi Kelompok</p>
+        <div class="time-message" id="timeMessage"></div>
+        <a href="register.html" class="cta-button">Mulai Sekarang</a>
+      </div>
     </section>
 
     <!-- Places Section -->
     <section id="tempat" class="places-section">
-        <div class="container">
-            <h2>📌 Tempat Nongkrong Populer</h2>
-            
-            <!-- Filter -->
-            <div class="filter-container">
-                <select id="categoryFilter" class="filter-select">
-                    <option value="">🎯 Semua Kategori</option>
-                    <option value="cafe">☕ Cafe</option>
-                    <option value="taman">🌳 Taman</option>
-                    <option value="perpustakaan">📚 Perpustakaan</option>
-                </select>
-                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cari tempat...">
-            </div>
+      <div class="container">
+        <h2>📌 Tempat Nongkrong Populer</h2>
 
-            <!-- Places Grid -->
-            <div id="placesList" class="places-grid">
-                <div class="loading">🔄 Memuat tempat nongkrong...</div>
-            </div>
+        <!-- Filter -->
+        <div class="filter-container">
+          <select id="categoryFilter" class="filter-select">
+            <option value="">🎯 Semua Kategori</option>
+            <option value="nongkrong">🏖️ Nongkrong</option>
+            <option value="belajar">📚 Belajar</option>
+            <option value="diskusi">👥 Diskusi</option>
+          </select>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="🔍 Cari tempat..."
+          />
         </div>
+
+        <!-- Places Grid -->
+        <div id="placesList" class="places-grid">
+          <div class="loading">🔄 Memuat tempat nongkrong...</div>
+        </div>
+      </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <p>&copy; 2025 NONGKIS - Kelompok 8 API</p>
-            <p>Alif Apriansyah - Sistem Booking Tempat</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2025 NONGKIS - Kelompok 8 API</p>
+        <p>Alif Apriansyah - Sistem Booking Tempat</p>
+        <p>
+          <a href="/docs" target="_blank" style="color: #007bff"
+            >📚 API Documentation</a
+          >
+        </p>
+      </div>
     </footer>
 
     <!-- Scripts -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/time.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/interactive-maps.js"></script>
+    <script src="js/notifications.js"></script>
     <script src="js/main.js"></script>
-</body>
+  </body>
 </html>

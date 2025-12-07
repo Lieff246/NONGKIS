@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 export default class AuthController {
   async register({ request, response }: HttpContext) {
     try {
-      const { name, email, password } = request.only(['name', 'email', 'password'])
+      const { name, email, password, role } = request.only(['name', 'email', 'password', 'role'])
 
       // Check if email already exists
       const existingUser = await User.findOne({ email })
@@ -18,11 +18,13 @@ export default class AuthController {
       const hashedPassword = await bcrypt.hash(password, 10)
       console.log('🔍 REGISTER - Password:', password)
       console.log('🔍 REGISTER - Hashed:', hashedPassword)
+      console.log('🔍 REGISTER - Role:', role || 'user')
 
       const user = await User.create({
         name,
         email,
         password: hashedPassword,
+        role: role || 'user', // Use provided role or default to 'user'
       })
 
       return response.created({
@@ -67,20 +69,7 @@ export default class AuthController {
         return response.unauthorized({ message: 'Invalid credentials' })
       }
 
-      // Check if user is admin
-      if (user.role !== 'admin') {
-        return response.ok({
-          message: 'Login successful',
-          user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          },
-        })
-      }
-
-      // Generate JWT token only for admin
+      // Generate JWT token for all users
       const token = jwt.sign(
         {
           id: user._id,
@@ -92,7 +81,7 @@ export default class AuthController {
       )
 
       return response.ok({
-        message: 'Admin login successful',
+        message: 'Login successful',
         token: token,
         user: {
           id: user._id,
@@ -109,39 +98,7 @@ export default class AuthController {
     }
   }
 
-  async createAdmin({ request, response }: HttpContext) {
-    try {
-      const { name, email, password } = request.only(['name', 'email', 'password'])
 
-      // Check if admin already exists
-      const existingAdmin = await User.findOne({ email })
-      if (existingAdmin) {
-        return response.conflict({ message: 'Admin already exists' })
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10)
-      const admin = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'admin',
-      })
-
-      return response.created({
-        message: 'Admin created successfully',
-        user: {
-          id: admin._id,
-          name: admin.name,
-          email: admin.email,
-          role: admin.role,
-        },
-      })
-    } catch (error) {
-      return response.internalServerError({
-        message: 'Failed to create admin',
-      })
-    }
-  }
 
   // Get user profile
   async profile({ request, response }: HttpContext) {

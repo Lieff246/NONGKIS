@@ -1,0 +1,518 @@
+openapi: 3.0.3
+info:
+  title: NONGKIS API
+  description: |
+    **NONGKIS** - Platform Booking Tempat Nongkrong di Palu
+    
+    API untuk sistem booking tempat nongkrong yang terintegrasi dengan:
+    - 🌍 **WorldTimeAPI** - Real-time waktu Palu (WITA)
+    - 🗺️ **OpenStreetMap** - Geocoding & routing
+    - 📍 **Location-aware** - Jarak real-time ke tempat
+    - 👥 **Multi-role** - User, Owner, Admin
+    
+    **Flow Booking:**
+    User → Admin → Owner → Confirmed
+  version: 1.0.0
+  contact:
+    name: Alif Apriansyah
+    email: alifapriansyah246@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3333
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: Login, register, dan manajemen user
+  - name: Places
+    description: Manajemen tempat nongkrong
+  - name: Bookings
+    description: Sistem booking tempat
+  - name: Maps
+    description: Geocoding dan routing (OpenStreetMap)
+  - name: Time
+    description: Waktu real-time Palu (WorldTimeAPI)
+
+paths:
+  # Authentication Endpoints
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register user baru
+      description: Daftarkan user, owner, atau admin baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: "Alif Apriansyah"
+                email:
+                  type: string
+                  format: email
+                  example: "alif@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "password123"
+                role:
+                  type: string
+                  enum: [user, owner, admin]
+                  default: user
+                  example: "user"
+      responses:
+        201:
+          description: User berhasil didaftarkan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        409:
+          description: Email sudah terdaftar
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "alif@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        200:
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthResponse'
+                  - type: object
+                    properties:
+                      token:
+                        type: string
+                        description: JWT token (untuk admin/owner)
+
+  /auth/profile:
+    get:
+      tags: [Authentication]
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # Places Endpoints
+  /places:
+    get:
+      tags: [Places]
+      summary: Get semua tempat approved
+      description: Menampilkan semua tempat yang sudah diapprove admin
+      responses:
+        200:
+          description: List tempat approved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Place'
+    
+    post:
+      tags: [Places]
+      summary: Tambah tempat baru (Owner)
+      description: Owner menambahkan tempat baru (status pending)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceInput'
+      responses:
+        201:
+          description: Tempat berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+
+  /places/pending:
+    get:
+      tags: [Places]
+      summary: Get tempat pending (Admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List tempat pending approval
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Place'
+
+  /places/{id}/approve:
+    put:
+      tags: [Places]
+      summary: Approve/reject tempat (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+      responses:
+        200:
+          description: Status tempat berhasil diupdate
+
+  # Bookings Endpoints
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: Get semua booking
+      responses:
+        200:
+          description: List semua booking
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+    
+    post:
+      tags: [Bookings]
+      summary: Buat booking baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingInput'
+      responses:
+        201:
+          description: Booking berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}/status:
+    put:
+      tags: [Bookings]
+      summary: Update status booking (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, admin_contacted_owner, owner_approved, owner_rejected, confirmed, cancelled]
+      responses:
+        200:
+          description: Status booking berhasil diupdate
+
+  # Maps Endpoints (OpenStreetMap Integration)
+  /maps/geocode/{address}:
+    get:
+      tags: [Maps]
+      summary: Geocoding alamat ke koordinat
+      description: Convert alamat menjadi koordinat lat/lng menggunakan OpenStreetMap
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Jl. Diponegoro, Palu"
+      responses:
+        200:
+          description: Koordinat berhasil ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodeResponse'
+        404:
+          description: Alamat tidak ditemukan
+
+  /maps/route:
+    get:
+      tags: [Maps]
+      summary: Hitung rute antar koordinat
+      description: Menghitung jarak dan waktu tempuh antar dua titik
+      parameters:
+        - name: startLat
+          in: query
+          required: true
+          schema:
+            type: number
+          example: -0.8917
+        - name: startLng
+          in: query
+          required: true
+          schema:
+            type: number
+          example: 119.8707
+        - name: endLat
+          in: query
+          required: true
+          schema:
+            type: number
+          example: -0.8950
+        - name: endLng
+          in: query
+          required: true
+          schema:
+            type: number
+          example: 119.8750
+      responses:
+        200:
+          description: Rute berhasil dihitung
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteResponse'
+
+  # Time Endpoint (WorldTimeAPI Integration)
+  /time/palu:
+    get:
+      tags: [Time]
+      summary: Get waktu real-time Palu
+      description: Mengambil waktu real-time Palu (WITA) dari WorldTimeAPI
+      responses:
+        200:
+          description: Waktu Palu berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, owner, admin]
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    Place:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [nongkrong, belajar, diskusi]
+        capacity:
+          type: number
+        coordinates:
+          type: object
+          properties:
+            lat:
+              type: number
+            lng:
+              type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        owner_id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PlaceInput:
+      type: object
+      required: [name, location, category, capacity, owner_id]
+      properties:
+        name:
+          type: string
+          example: "Cafe Keren"
+        location:
+          type: string
+          example: "Jl. Diponegoro No. 123, Palu"
+        description:
+          type: string
+          example: "Tempat nongkrong yang nyaman"
+        category:
+          type: string
+          enum: [nongkrong, belajar, diskusi]
+          example: "nongkrong"
+        capacity:
+          type: number
+          example: 20
+        owner_id:
+          type: string
+
+    Booking:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        place:
+          $ref: '#/components/schemas/Place'
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        status:
+          type: string
+          enum: [pending, admin_contacted_owner, owner_approved, owner_rejected, confirmed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingInput:
+      type: object
+      required: [placeId, date, time]
+      properties:
+        placeId:
+          type: string
+        date:
+          type: string
+          format: date
+          example: "2025-12-01"
+        time:
+          type: string
+          example: "10:00"
+
+    GeocodeResponse:
+      type: object
+      properties:
+        address:
+          type: string
+        coordinates:
+          type: object
+          properties:
+            lat:
+              type: number
+            lng:
+              type: number
+        display_name:
+          type: string
+        found:
+          type: boolean
+
+    RouteResponse:
+      type: object
+      properties:
+        distance:
+          type: number
+          description: Jarak dalam meter
+        duration:
+          type: number
+          description: Waktu dalam detik
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+        instructions:
+          type: array
+          items:
+            type: string
+        fallback:
+          type: boolean
+
+    TimeResponse:
+      type: object
+      properties:
+        currentTime:
+          type: string
+          format: date-time
+        timeString:
+          type: string
+          example: "14:30:45"
+        dateString:
+          type: string
+          example: "Minggu, 1 Desember 2025"
+        timezone:
+          type: string
+          example: "WITA"
+        message:
+          type: string
+          example: "Selamat siang! Perfect untuk lunch break ☀️"

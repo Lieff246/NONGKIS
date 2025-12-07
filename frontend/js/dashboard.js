@@ -58,20 +58,26 @@ async function loadUserBookings() {
             return;
         }
         
-        bookingsContainer.innerHTML = userBookings.map(booking => `
-            <div class="booking-card">
-                <div class="booking-header">
-                    <h4>${booking.place?.name || 'Tempat'}</h4>
-                    <span class="booking-status pending">Pending</span>
+        bookingsContainer.innerHTML = userBookings.map(booking => {
+            const statusText = getStatusText(booking.status || 'pending');
+            const statusClass = getStatusClass(booking.status || 'pending');
+            
+            return `
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <h4>${booking.place?.name || 'Tempat'}</h4>
+                        <span class="booking-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="booking-info">
+                        <p><strong>Tanggal:</strong> ${booking.date}</p>
+                        <p><strong>Waktu:</strong> ${booking.time}</p>
+                        <p><strong>Nama:</strong> ${booking.customerName}</p>
+                        <p><strong>Email:</strong> ${booking.customerEmail}</p>
+                        ${booking.capacity ? `<p><strong>Jumlah Orang:</strong> ${booking.capacity}</p>` : ''}
+                    </div>
                 </div>
-                <div class="booking-info">
-                    <p><strong>Tanggal:</strong> ${booking.date}</p>
-                    <p><strong>Waktu:</strong> ${booking.time}</p>
-                    <p><strong>Nama:</strong> ${booking.customerName}</p>
-                    <p><strong>Email:</strong> ${booking.customerEmail}</p>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
     } catch (error) {
         console.error('Error loading bookings:', error);
@@ -85,6 +91,25 @@ function logout() {
     localStorage.removeItem('nongkis_token');
     alert('👋 Logout berhasil!');
     window.location.href = 'index.html';
+}
+
+// Helper functions for booking status
+function getStatusText(status) {
+    const statusMap = {
+        'pending': '⏳ Menunggu Owner',
+        'approved': '✅ Disetujui',
+        'rejected': '❌ Ditolak'
+    };
+    return statusMap[status] || '⏳ Pending';
+}
+
+function getStatusClass(status) {
+    const classMap = {
+        'pending': 'pending',
+        'approved': 'approved',
+        'rejected': 'rejected'
+    };
+    return classMap[status] || 'pending';
 }
 
 // Export functions
