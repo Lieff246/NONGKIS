@@ -3,22 +3,19 @@ info:
   title: NONGKIS API
   description: |
     **NONGKIS** - Platform Booking Tempat Nongkrong di Palu
-    
+
     API untuk sistem booking tempat nongkrong yang terintegrasi dengan:
     - 🌍 **WorldTimeAPI** - Real-time waktu Palu (WITA)
     - 🗺️ **OpenStreetMap** - Geocoding & routing
     - 📍 **Location-aware** - Jarak real-time ke tempat
     - 👥 **Multi-role** - User, Owner, Admin
-    
+
     **Flow Booking:**
     User → Admin → Owner → Confirmed
   version: 1.0.0
   contact:
     name: Alif Apriansyah
     email: alifapriansyah246@gmail.com
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
 
 servers:
   - url: http://localhost:3333
@@ -27,6 +24,8 @@ servers:
 tags:
   - name: Authentication
     description: Login, register, dan manajemen user
+  - name: Users
+    description: CRUD manajemen user
   - name: Places
     description: Manajemen tempat nongkrong
   - name: Bookings
@@ -53,20 +52,20 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "Alif Apriansyah"
+                  example: 'Alif Apriansyah'
                 email:
                   type: string
                   format: email
-                  example: "alif@example.com"
+                  example: 'alif@example.com'
                 password:
                   type: string
                   minLength: 6
-                  example: "password123"
+                  example: 'password123'
                 role:
                   type: string
                   enum: [user, owner, admin]
                   default: user
-                  example: "user"
+                  example: 'user'
       responses:
         201:
           description: User berhasil didaftarkan
@@ -92,10 +91,10 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: "alif@example.com"
+                  example: 'alif@example.com'
                 password:
                   type: string
-                  example: "password123"
+                  example: 'password123'
       responses:
         200:
           description: Login berhasil
@@ -124,6 +123,90 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
 
+  # Users Endpoints
+  /users:
+    get:
+      tags: [Users]
+      summary: Get semua user
+      description: Menampilkan semua user yang terdaftar
+      responses:
+        200:
+          description: List semua user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: User tidak ditemukan
+
+    put:
+      tags: [Users]
+      summary: Update user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        200:
+          description: User berhasil diupdate
+        401:
+          description: Unauthorized
+
+    delete:
+      tags: [Users]
+      summary: Delete user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User berhasil dihapus
+        401:
+          description: Unauthorized
+
   # Places Endpoints
   /places:
     get:
@@ -139,7 +222,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Place'
-    
+
     post:
       tags: [Places]
       summary: Tambah tempat baru (Owner)
@@ -157,6 +240,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Place'
+
+  /places/all:
+    get:
+      tags: [Places]
+      summary: Get semua tempat (termasuk pending)
+      description: Menampilkan semua tempat untuk owner
+      responses:
+        200:
+          description: List semua tempat
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Place'
+
+  /places/{id}:
+    get:
+      tags: [Places]
+      summary: Get tempat by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Data tempat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        404:
+          description: Tempat tidak ditemukan
+
+    put:
+      tags: [Places]
+      summary: Update tempat
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceInput'
+      responses:
+        200:
+          description: Tempat berhasil diupdate
+        401:
+          description: Unauthorized
+
+    delete:
+      tags: [Places]
+      summary: Delete tempat
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Tempat berhasil dihapus
+        401:
+          description: Unauthorized
 
   /places/pending:
     get:
@@ -214,7 +372,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Booking'
-    
+
     post:
       tags: [Bookings]
       summary: Buat booking baru
@@ -231,6 +389,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Booking'
+
+  /bookings/owner/{ownerId}:
+    get:
+      tags: [Bookings]
+      summary: Get booking by owner ID
+      description: Menampilkan semua booking untuk owner tertentu
+      parameters:
+        - name: ownerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List booking owner
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}:
+    delete:
+      tags: [Bookings]
+      summary: Delete booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Booking berhasil dihapus
+        401:
+          description: Unauthorized
 
   /bookings/{id}/status:
     put:
@@ -253,7 +450,15 @@ paths:
               properties:
                 status:
                   type: string
-                  enum: [pending, admin_contacted_owner, owner_approved, owner_rejected, confirmed, cancelled]
+                  enum:
+                    [
+                      pending,
+                      admin_contacted_owner,
+                      owner_approved,
+                      owner_rejected,
+                      confirmed,
+                      cancelled,
+                    ]
       responses:
         200:
           description: Status booking berhasil diupdate
@@ -270,7 +475,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "Jl. Diponegoro, Palu"
+          example: 'Jl. Diponegoro, Palu'
       responses:
         200:
           description: Koordinat berhasil ditemukan
@@ -403,17 +608,17 @@ components:
       properties:
         name:
           type: string
-          example: "Cafe Keren"
+          example: 'Cafe Keren'
         location:
           type: string
-          example: "Jl. Diponegoro No. 123, Palu"
+          example: 'Jl. Diponegoro No. 123, Palu'
         description:
           type: string
-          example: "Tempat nongkrong yang nyaman"
+          example: 'Tempat nongkrong yang nyaman'
         category:
           type: string
           enum: [nongkrong, belajar, diskusi]
-          example: "nongkrong"
+          example: 'nongkrong'
         capacity:
           type: number
           example: 20
@@ -440,7 +645,8 @@ components:
           type: string
         status:
           type: string
-          enum: [pending, admin_contacted_owner, owner_approved, owner_rejected, confirmed, cancelled]
+          enum:
+            [pending, admin_contacted_owner, owner_approved, owner_rejected, confirmed, cancelled]
         createdAt:
           type: string
           format: date-time
@@ -454,10 +660,10 @@ components:
         date:
           type: string
           format: date
-          example: "2025-12-01"
+          example: '2025-12-01'
         time:
           type: string
-          example: "10:00"
+          example: '10:00'
 
     GeocodeResponse:
       type: object
@@ -506,13 +712,13 @@ components:
           format: date-time
         timeString:
           type: string
-          example: "14:30:45"
+          example: '14:30:45'
         dateString:
           type: string
-          example: "Minggu, 1 Desember 2025"
+          example: 'Minggu, 1 Desember 2025'
         timezone:
           type: string
-          example: "WITA"
+          example: 'WITA'
         message:
           type: string
-          example: "Selamat siang! Perfect untuk lunch break ☀️"
+          example: 'Selamat siang! Perfect untuk lunch break ☀️'
