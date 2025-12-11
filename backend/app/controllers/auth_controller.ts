@@ -16,9 +16,6 @@ export default class AuthController {
 
       // Create user with bcrypt hashed password
       const hashedPassword = await bcrypt.hash(password, 10)
-      console.log('🔍 REGISTER - Password:', password)
-      console.log('🔍 REGISTER - Hashed:', hashedPassword)
-      console.log('🔍 REGISTER - Role:', role || 'user')
 
       const user = await User.create({
         name,
@@ -46,24 +43,14 @@ export default class AuthController {
     try {
       const { email, password } = request.only(['email', 'password'])
 
-      // SIMPLE DEBUG
-      console.log('🔍 LOGIN: ', email, password)
-
       // Find user by email
       const user = await User.findOne({ email })
-      console.log('🔍 USER FOUND: ', user ? 'YES' : 'NO')
-
       if (!user) {
         return response.unauthorized({ message: 'Invalid credentials' })
       }
 
-      // SIMPLE DEBUG
-      console.log('🔍 STORED PASSWORD: ', user.password)
-      console.log('🔍 PASSWORD LENGTH: ', user.password?.length)
-
       // Verify password with bcrypt
       const isValidPassword = await bcrypt.compare(password, user.password as string)
-      console.log('🔍 PASSWORD VALID: ', isValidPassword)
 
       if (!isValidPassword) {
         return response.unauthorized({ message: 'Invalid credentials' })
@@ -91,7 +78,6 @@ export default class AuthController {
         },
       })
     } catch (error) {
-      console.log('❌ LOGIN ERROR: ', error)
       return response.internalServerError({
         message: 'Login failed',
       })

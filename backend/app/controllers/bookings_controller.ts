@@ -6,18 +6,7 @@ import Place from '#models/place'
 export default class BookingsController {
   async index({ response }: HttpContext) {
     try {
-      // Get all bookings with populated place data (untuk admin)
-      let bookings = await Booking.find().populate('place').populate('owner', 'name email')
-      
-      // Add default status to bookings that don't have it (for display only)
-      bookings = bookings.map(booking => {
-        const bookingObj = booking.toObject()
-        if (!bookingObj.status) {
-          bookingObj.status = 'pending'
-        }
-        return bookingObj
-      })
-
+      const bookings = await Booking.find().populate('place').populate('owner', 'name email')
       return response.ok(bookings)
     } catch (error) {
       return response.internalServerError({
@@ -67,6 +56,37 @@ export default class BookingsController {
       if (!place) {
         return response.notFound({ message: 'Place not found' })
       }
+      
+      // Check if place is open
+      const timeResponse = await fetch('http://localhost:3333/time/palu')
+      const timeData = await timeResponse.json()
+      const currentTime = timeData.timeString.split(':')[0] + ':' + timeData.timeString.split(':')[1]
+      const openTime = place.openHours || '08:00'
+      const closeTime = place.closeHours || '22:00'
+      
+      // Convert to minutes for proper comparison
+      const currentMinutes = parseInt(currentTime.split(':')[0]) * 60 + parseInt(currentTime.split(':')[1])
+      const openMinutes = parseInt(openTime.split(':')[0]) * 60 + parseInt(openTime.split(':')[1])
+      const closeMinutes = parseInt(closeTime.split(':')[0]) * 60 + parseInt(closeTime.split(':')[1])
+      
+      let isOpen
+      
+      // Check for 24-hour operation
+      if (openTime === '00:00' && closeTime === '23:59') {
+        isOpen = true // Always open
+      } else if (closeMinutes < openMinutes) {
+        // Overnight operation
+        isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes
+      } else {
+        // Normal operation
+        isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes
+      }
+      
+      if (!isOpen) {
+        return response.badRequest({
+          message: `Tempat sedang tutup. Buka: ${openTime} - ${closeTime}`
+        })
+      }
 
       // Validate capacity
       const capacity = parseInt(data.capacity) || 1
@@ -110,55 +130,28 @@ export default class BookingsController {
   }
 
   async updateStatus({ params, request, response }: HttpContext) {
-    console.log('\n=== UPDATE STATUS REQUEST ===')
-    console.log('Booking ID:', params.id)
-    console.log('Request method:', request.method())
-    console.log('Request URL:', request.url())
-    
     try {
-      const requestBody = request.body()
-      console.log('Request body:', requestBody)
-      
       const { status } = request.only(['status'])
-      console.log('Extracted status:', status)
       
       if (!status) {
-        console.log('❌ No status provided')
         return response.badRequest({ message: 'Status is required' })
       }
       
-      console.log('Finding booking with ID:', params.id)
-      const existingBooking = await Booking.findById(params.id)
-      console.log('Existing booking before update:', existingBooking)
-      
-      console.log('Updating booking...')
       const booking = await Booking.findByIdAndUpdate(
         params.id,
         { status },
         { new: true }
       )
       
-      console.log('Updated booking result:', booking)
-      
       if (!booking) {
-        console.log('❌ Booking not found after update')
         return response.notFound({ message: 'Booking not found' })
       }
       
-      // Double check by fetching again
-      const verifyBooking = await Booking.findById(params.id)
-      console.log('Final verification:', verifyBooking)
-      
-      console.log('✅ Update completed successfully')
-      console.log('=== END UPDATE REQUEST ===\n')
-      
       return response.ok({
         message: 'Booking status updated successfully',
-        booking: verifyBooking
+        booking: booking
       })
     } catch (error) {
-      console.error('❌ Update status error:', error)
-      console.log('=== ERROR END ===\n')
       return response.internalServerError({
         message: 'Failed to update booking status',
         error: error.message
@@ -166,36 +159,20 @@ export default class BookingsController {
     }
   }
 
-  async destroy({ params, request, response }: HttpContext) {
+  async destroy({ params, response }: HttpContext) {
     try {
-      console.log('🗑️ Delete booking request:', params.id)
-      
-      // Check if booking exists
-      const booking = await Booking.findById(params.id)
+      const booking = await Booking.findByIdAndDelete(params.id)
       
       if (!booking) {
-        console.log('❌ Booking not found:', params.id)
-        return response.notFound({
-          message: 'Booking not found'
-        })
+        return response.notFound({ message: 'Booking not found' })
       }
       
-      console.log('✅ Booking found, deleting...', booking._id)
-      
-      // Delete the booking
-      await Booking.findByIdAndDelete(params.id)
-      
-      console.log('✅ Booking deleted successfully')
-      
-      return response.ok({
-        message: 'Booking deleted successfully',
-      })
+      return response.ok({ message: 'Booking deleted successfully' })
     } catch (error) {
-      console.error('❌ Delete booking error:', error)
       return response.internalServerError({
-        message: 'Failed to delete booking',
-        error: error.message
+        message: 'Failed to delete booking'
       })
     }
   }
+
 }

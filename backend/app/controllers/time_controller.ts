@@ -3,22 +3,33 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class TimeController {
   async getPaluTime({ response }: HttpContext) {
     try {
-      // Try WorldTimeAPI first
+      // Try WorldTimeAPI first (Public API)
       const apiResponse = await fetch('https://worldtimeapi.org/api/timezone/Asia/Makassar')
       
       if (apiResponse.ok) {
         const data = await apiResponse.json()
-        return response.json(this.formatTimeData(data))
+        const result = this.formatTimeData(data)
+        console.log('🌍 PUBLIC API TIME (WorldTimeAPI):', result.timeString)
+        return response.json(result)
       }
     } catch (error) {
-      // API failed, use fallback
+      console.log('⚠️ WorldTimeAPI failed, using fallback')
     }
     
     // Fallback: use server time with WITA offset
     const now = new Date()
     const witaTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8 for WITA
     
-    return response.json(this.formatTimeData({ datetime: witaTime.toISOString() }))
+    const result = {
+      currentTime: witaTime,
+      timeString: this.formatTime(witaTime),
+      dateString: this.formatDate(witaTime),
+      timezone: 'WITA (Fallback)',
+      message: this.getTimeMessage(witaTime)
+    }
+    
+    console.log('🕐 FALLBACK TIME:', result.timeString)
+    return response.json(result)
   }
   
   private formatTimeData(data: any) {
@@ -38,7 +49,7 @@ export default class TimeController {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      timeZone: 'Asia/Makassar'
+      hour12: false
     })
   }
   

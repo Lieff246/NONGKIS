@@ -37,6 +37,14 @@ const PlaceSchema = new mongoose.Schema(
       type: Number,
       default: 10
     },
+    openHours: {
+      type: String,
+      default: '08:00'
+    },
+    closeHours: {
+      type: String,
+      default: '22:00'
+    },
     coordinates: {
       lat: {
         type: Number,

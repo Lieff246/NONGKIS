@@ -45,13 +45,14 @@ router.put('/users/:id', [UsersController, 'update']).middleware(authMiddleware)
 router.delete('/users/:id', [UsersController, 'destroy']).middleware(authMiddleware)
 
 // Place routes
-router.get('/places', [PlacesController, 'index'])
-router.get('/places/pending', [PlacesController, 'pending']).middleware(authMiddleware)
-router.get('/places/all', [PlacesController, 'all']) // New route for owner to see all their places
+router.get('/places', [PlacesController, 'index']) // Supports ?status=pending&filter=all
+router.get('/places/pending', [PlacesController, 'pending']).middleware(authMiddleware) // Legacy
+router.get('/places/all', [PlacesController, 'all']) // Legacy
 router.get('/places/:id', [PlacesController, 'show'])
 router.post('/places', [PlacesController, 'store']) // Owner can submit without token
 router.put('/places/:id', [PlacesController, 'update']).middleware(authMiddleware)
 router.put('/places/:id/approve', [PlacesController, 'approve']).middleware(authMiddleware)
+router.patch('/places/:id', [PlacesController, 'approve']).middleware(authMiddleware) // More RESTful
 router.delete('/places/:id', [PlacesController, 'destroy']).middleware(authMiddleware)
 
 // Booking routes
@@ -59,6 +60,7 @@ router.get('/bookings', [BookingsController, 'index'])
 router.get('/bookings/owner/:ownerId', [BookingsController, 'getOwnerBookings'])
 router.post('/bookings', [BookingsController, 'store']) // Public booking
 router.put('/bookings/:id/status', [BookingsController, 'updateStatus']).middleware(authMiddleware)
+router.patch('/bookings/:id', [BookingsController, 'updateStatus']).middleware(authMiddleware) // More RESTful
 router.delete('/bookings/:id', [BookingsController, 'destroy']).middleware(authMiddleware)
 
 // Time routes
