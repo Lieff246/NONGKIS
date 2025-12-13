@@ -2,19 +2,24 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 export default class TimeController {
   async getPaluTime({ response }: HttpContext) {
+    // Try TimeAPI.io (Primary Public API)
     try {
-      // Try WorldTimeAPI first (Public API)
-      const apiResponse = await fetch('https://worldtimeapi.org/api/timezone/Asia/Makassar')
+      console.log('🌍 Trying TimeAPI.io...')
+      const apiResponse = await fetch('http://timeapi.io/api/Time/current/zone?timeZone=Asia/Makassar')
       
       if (apiResponse.ok) {
         const data = await apiResponse.json()
-        const result = this.formatTimeData(data)
-        console.log('🌍 PUBLIC API TIME (WorldTimeAPI):', result.timeString)
+        const result = this.formatTimeAPIData(data)
+        console.log('🌍 TimeAPI.io SUCCESS:', result.timeString)
         return response.json(result)
+      } else {
+        console.log('❌ TimeAPI.io HTTP Error:', apiResponse.status, apiResponse.statusText)
       }
     } catch (error) {
-      console.log('⚠️ WorldTimeAPI failed, using fallback')
+      console.log('⚠️ TimeAPI.io failed:', error.message)
     }
+    
+    console.log('🚨 WorldTimeAPI failed, using server fallback')
     
     // Fallback: use server time with WITA offset
     const now = new Date()
@@ -29,28 +34,30 @@ export default class TimeController {
     }
     
     console.log('🕐 FALLBACK TIME:', result.timeString)
+    console.log('🕐 JAM SEKARANG (WITA):', result.timeString.substring(0, 5))
     return response.json(result)
   }
   
-  private formatTimeData(data: any) {
-    const dateTime = new Date(data.datetime)
+
+  
+  private formatTimeAPIData(data: any) {
+    const dateTime = new Date(data.dateTime)
     
     return {
       currentTime: dateTime,
       timeString: this.formatTime(dateTime),
       dateString: this.formatDate(dateTime),
-      timezone: 'WITA',
+      timezone: 'WITA (TimeAPI.io)',
       message: this.getTimeMessage(dateTime)
     }
   }
   
   private formatTime(date: Date) {
-    return date.toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
+    // Use consistent HH:MM:SS format
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const seconds = date.getSeconds().toString().padStart(2, '0')
+    return `${hours}:${minutes}:${seconds}`
   }
   
   private formatDate(date: Date) {

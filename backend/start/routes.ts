@@ -18,11 +18,12 @@ const MapsController = () => import('#controllers/maps_controller')
 
 // Simple auth middleware
 const authMiddleware = async ({ request, response }: any, next: any) => {
-  const authHeader = request.header('Authorization')
+  const authHeader = request.header('Authorization') // Ambil Authorization Header
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Mengecek format header
     return response.status(401).json({ message: 'Bearer token required' })
   }
-  const token = authHeader.replace('Bearer ', '').replace(/"/g, '')
+  const token = authHeader.replace('Bearer ', '').replace(/"/g, '') //membersihkan token
   try {
     const jwt = await import('jsonwebtoken')
     jwt.default.verify(token, 'your-secret-key')
@@ -68,4 +69,3 @@ router.get('/time/palu', [TimeController, 'getPaluTime'])
 
 // Maps routes
 router.get('/maps/geocode/:address', [MapsController, 'geocode'])
-router.get('/maps/route', [MapsController, 'getRoute'])

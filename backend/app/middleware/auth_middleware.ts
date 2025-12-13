@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 export default class AuthMiddleware {
   async handle({ request, response }: HttpContext, next: () => Promise<void>) {
     const authHeader = request.header('Authorization')
-    
+    // Memastikan request mempunyai header bearer
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return response.status(401).json({ message: 'Bearer token required' })
     }
