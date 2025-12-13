@@ -1,116 +1,124 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Daftar - NONGKIS</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h2>🏖️ NONGKIS</h2>
-                <p>Buat akun baru</p>
-            </div>
-            
-            <form class="auth-form" id="registerForm">
-                <div class="form-group">
-                    <label for="role">Daftar Sebagai</label>
-                    <select id="role" name="role" required>
-                        <option value="">Pilih Role</option>
-                        <option value="user">👤 User (Pencari Tempat)</option>
-                        <option value="owner">🏪 Owner (Pemilik Tempat)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="name">Nama Lengkap</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required minlength="6">
-                </div>
-                
-                <button type="submit" class="auth-button">
-                    📝 Daftar
-                </button>
-            </form>
-            
-            <div class="auth-links">
-                <p>Sudah punya akun?</p>
-                <a href="login.html">Masuk di sini</a>
-                <br><br>
-                <a href="index.html">← Kembali ke Beranda</a>
-            </div>
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1>NONGKIS</h3>
+          <p>Buat akun baru</p>
         </div>
+
+        <form class="auth-form" id="registerForm">
+          <div class="form-group">
+            <label for="role">Daftar Sebagai</label>
+            <select id="role" name="role" required>
+              <option value="">Pilih Role</option>
+              <option value="user">User (Pencari Tempat)</option>
+              <option value="owner">Owner (Pemilik Tempat)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="name">Nama Lengkap</label>
+            <input type="text" id="name" name="name" required />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              minlength="6"
+            />
+          </div>
+
+          <button type="submit" class="auth-button">📝 Daftar</button>
+        </form>
+
+        <div class="auth-links">
+          <p>Sudah punya akun?</p>
+          <a href="login.html">Masuk di sini</a>
+          <br /><br />
+          <a href="index.html">← Kembali ke Beranda</a>
+        </div>
+      </div>
     </div>
 
     <script src="js/api.js"></script>
     <script>
-        // Handle register form
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            try {
-                submitBtn.textContent = '🔄 Mendaftar...';
-                submitBtn.disabled = true;
-                
-                const formData = new FormData(this);
-                const userData = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    password: formData.get('password'),
-                    role: formData.get('role')
-                };
-                
-                const result = await API.register(userData);
-                
-                if (result.message && result.message.includes('successfully')) {
-                    showNotification('✅ Pendaftaran berhasil!', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 1500);
-                } else {
-                    showNotification('❌ ' + (result.message || 'Pendaftaran gagal'), 'error');
-                }
-                
-            } catch (error) {
-                showNotification('❌ Terjadi kesalahan', 'error');
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
+      // Handle register form
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          try {
+            submitBtn.textContent = "🔄 Mendaftar...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const userData = {
+              name: formData.get("name"),
+              email: formData.get("email"),
+              password: formData.get("password"),
+              role: formData.get("role"),
+            };
+
+            const result = await API.register(userData);
+
+            if (result.message && result.message.includes("successfully")) {
+              showNotification("✅ Pendaftaran berhasil!", "success");
+              setTimeout(() => {
+                window.location.href = "login.html";
+              }, 1500);
+            } else {
+              showNotification(
+                "❌ " + (result.message || "Pendaftaran gagal"),
+                "error"
+              );
             }
+          } catch (error) {
+            showNotification("❌ Terjadi kesalahan", "error");
+          } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+          }
         });
 
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            const existing = document.querySelector('.notification');
-            if (existing) existing.remove();
-            
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.animation = 'slideOut 0.3s ease';
-                    setTimeout(() => notification.remove(), 300);
-                }
-            }, 3000);
-        }
+      // Show notification function
+      function showNotification(message, type = "info") {
+        const existing = document.querySelector(".notification");
+        if (existing) existing.remove();
+
+        const notification = document.createElement("div");
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.style.animation = "slideOut 0.3s ease";
+            setTimeout(() => notification.remove(), 300);
+          }
+        }, 3000);
+      }
     </script>
-</body>
+  </body>
 </html>

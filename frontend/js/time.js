@@ -2,18 +2,19 @@
 class TimeService {
     static async getPaluTime() {
         try {
-            // Get Palu time from backend
+            // Get Palu time from backend (uses WorldTimeAPI)
             const response = await fetch('/time/palu');
             
             if (!response.ok) {
-                throw new Error('Time API failed');
+                throw new Error('WorldTimeAPI failed');
             }
             
             const data = await response.json();
-            return data; // Backend already formats the data
+            console.log('🌍 WorldTimeAPI Response:', data);
+            return data; // Backend already formats WorldTimeAPI data
             
         } catch (error) {
-            console.error('Time API Error:', error);
+            console.error('WorldTimeAPI Error:', error);
             // Fallback to local time
             return this.formatTimeData({ datetime: new Date().toISOString() });
         }

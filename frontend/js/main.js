@@ -169,12 +169,12 @@ function createPlaceCard(place) {
   const categoryIcon = getCategoryIcon(place.category);
   const imageUrl =
     place.image || "https://via.placeholder.com/300x200?text=Tempat+Nongkrong";
-  
+
   // Status buka/tutup
   const isOpen = place.isOpen !== undefined ? place.isOpen : true;
-  const openHours = place.openHours || '08:00';
-  const closeHours = place.closeHours || '22:00';
-  const statusBadge = isOpen 
+  const openHours = place.openHours || "08:00";
+  const closeHours = place.closeHours || "22:00";
+  const statusBadge = isOpen
     ? `<span class="status-badge open">🟢 BUKA</span>`
     : `<span class="status-badge closed">🔴 TUTUP</span>`;
 
@@ -199,7 +199,7 @@ function createPlaceCard(place) {
                 <div class="place-actions">
                     ${
                       currentUser
-                        ? isOpen 
+                        ? isOpen
                           ? `<button onclick="bookPlace('${place._id}')" class="book-button">
                               📅 Booking Sekarang
                             </button>`
@@ -210,8 +210,10 @@ function createPlaceCard(place) {
                             🔐 Login untuk Booking
                         </button>`
                     }
-                    <button onclick="showRoute('${place._id}', '${place.location}')" class="nav-button">
-                        🗺️ Lihat Lokasi
+                    <button onclick="showRoute('${place._id}', '${
+    place.location
+  }')" class="nav-button">
+                         Lihat Lokasi
                     </button>
                 </div>
             </div>

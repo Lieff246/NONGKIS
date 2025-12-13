@@ -1,113 +1,115 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - NONGKIS</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h2>🏖️ NONGKIS</h2>
-                <p>Masuk ke akun Anda</p>
-            </div>
-            
-            <form class="auth-form" id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                
-                <button type="submit" class="auth-button">
-                    🔐 Masuk
-                </button>
-            </form>
-            
-            <div class="auth-links">
-                <p>Belum punya akun?</p>
-                <a href="register.html">Daftar di sini</a>
-                <br><br>
-                <a href="index.html">← Kembali ke Beranda</a>
-            </div>
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1>NONGKIS</h1>
+          <p>Masuk ke akun Anda</p>
         </div>
+
+        <form class="auth-form" id="loginForm">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+
+          <button type="submit" class="auth-button">🔐 Masuk</button>
+        </form>
+
+        <div class="auth-links">
+          <p>Belum punya akun?</p>
+          <a href="register.html">Daftar di sini</a>
+          <br /><br />
+          <a href="index.html">← Kembali ke Beranda</a>
+        </div>
+      </div>
     </div>
 
     <script src="js/api.js"></script>
     <script>
-        // Handle login form
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            try {
-                submitBtn.textContent = '🔄 Masuk...';
-                submitBtn.disabled = true;
-                
-                const formData = new FormData(this);
-                const credentials = {
-                    email: formData.get('email'),
-                    password: formData.get('password')
-                };
-                
-                const result = await API.login(credentials);
-                
-                if (result.token || result.user) {
-                    // Save user data and token
-                    localStorage.setItem('nongkis_user', JSON.stringify(result.user));
-                    if (result.token) {
-                        localStorage.setItem('nongkis_token', result.token);
-                    }
-                    
-                    showNotification('✅ Login berhasil!', 'success');
-                    
-                    setTimeout(() => {
-                        if (result.user.role === 'admin') {
-                            window.location.href = 'admin-dashboard.html';
-                        } else if (result.user.role === 'owner') {
-                            window.location.href = 'owner-dashboard.html';
-                        } else {
-                            window.location.href = 'dashboard.html';
-                        }
-                    }, 1000);
+      // Handle login form
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          try {
+            submitBtn.textContent = "🔄 Masuk...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const credentials = {
+              email: formData.get("email"),
+              password: formData.get("password"),
+            };
+
+            const result = await API.login(credentials);
+
+            if (result.token || result.user) {
+              // Save user data and token
+              localStorage.setItem("nongkis_user", JSON.stringify(result.user));
+              if (result.token) {
+                localStorage.setItem("nongkis_token", result.token);
+              }
+
+              showNotification("✅ Login berhasil!", "success");
+
+              setTimeout(() => {
+                if (result.user.role === "admin") {
+                  window.location.href = "admin-dashboard.html";
+                } else if (result.user.role === "owner") {
+                  window.location.href = "owner-dashboard.html";
                 } else {
-                    showNotification('❌ ' + (result.message || 'Login gagal'), 'error');
+                  window.location.href = "dashboard.html";
                 }
-                
-            } catch (error) {
-                showNotification('❌ Terjadi kesalahan', 'error');
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
+              }, 1000);
+            } else {
+              showNotification(
+                "❌ " + (result.message || "Login gagal"),
+                "error"
+              );
             }
+          } catch (error) {
+            showNotification("❌ Terjadi kesalahan", "error");
+          } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+          }
         });
 
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            const existing = document.querySelector('.notification');
-            if (existing) existing.remove();
-            
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.animation = 'slideOut 0.3s ease';
-                    setTimeout(() => notification.remove(), 300);
-                }
-            }, 3000);
-        }
+      // Show notification function
+      function showNotification(message, type = "info") {
+        const existing = document.querySelector(".notification");
+        if (existing) existing.remove();
+
+        const notification = document.createElement("div");
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.style.animation = "slideOut 0.3s ease";
+            setTimeout(() => notification.remove(), 300);
+          }
+        }, 3000);
+      }
     </script>
-</body>
+  </body>
 </html>

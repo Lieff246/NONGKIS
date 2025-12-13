@@ -1,7 +1,14 @@
-// Maps Service - OpenStreetMap Integration
+// Maps Service - Unified Maps & Interactive Maps
 class MapsService {
+    constructor() {
+        this.map = null;
+        this.markers = [];
+        this.userMarker = null;
+        this.selectedLocation = null;
+    }
+
+    // Parse coordinates from string
     static parseCoordinates(locationString) {
-        // Try to parse coordinates from string like "-0.900258, 119.888771"
         const parts = locationString.split(',');
         if (parts.length === 2) {
             const lat = parseFloat(parts[0].trim());
@@ -26,42 +33,10 @@ class MapsService {
         };
     }
     
-    static async getRoute(startLat, startLng, endLat, endLng) {
-        try {
-            const params = new URLSearchParams({
-                startLat: startLat,
-                startLng: startLng,
-                endLat: endLat,
-                endLng: endLng
-            });
-            
-            const response = await fetch(`/maps/route?${params}`);
-            
-            if (!response.ok) {
-                throw new Error('Route calculation failed');
-            }
-            
-            return await response.json();
-            
-        } catch (error) {
-            console.error('Route error:', error);
-            // Fallback: simple straight line
-            const distance = this.calculateDistance(startLat, startLng, endLat, endLng);
-            return {
-                distance: Math.round(distance),
-                duration: Math.round(distance / 1.4),
-                coordinates: [[startLng, startLat], [endLng, endLat]],
-                instructions: ['Berjalan menuju tujuan'],
-                fallback: true
-            };
-        }
-    }
-    
     // Get user's current location
     static async getCurrentLocation() {
         return new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
-                // Fallback: Palu center
                 resolve({
                     lat: -0.8917,
                     lng: 119.8707,
@@ -80,7 +55,6 @@ class MapsService {
                 },
                 (error) => {
                     console.error('Geolocation error:', error);
-                    // Fallback: Palu center
                     resolve({
                         lat: -0.8917,
                         lng: 119.8707,
@@ -90,50 +64,171 @@ class MapsService {
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
-                    maximumAge: 300000 // 5 minutes
+                    maximumAge: 300000
                 }
             );
         });
     }
-    
-    // Format distance for display
-    static formatDistance(meters) {
-        if (meters < 1000) {
-            return `${meters}m`;
-        } else {
-            return `${(meters / 1000).toFixed(1)}km`;
-        }
-    }
-    
-    // Format duration for display
-    static formatDuration(seconds) {
-        if (seconds < 60) {
-            return `${seconds} detik`;
-        } else if (seconds < 3600) {
-            return `${Math.round(seconds / 60)} menit`;
-        } else {
-            return `${Math.round(seconds / 3600)} jam`;
-        }
-    }
-    
-    // Calculate straight line distance (fallback)
-    static calculateDistance(lat1, lng1, lat2, lng2) {
-        const R = 6371e3; // Earth radius in meters
-        const φ1 = lat1 * Math.PI/180;
-        const φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180;
-        const Δλ = (lng2-lng1) * Math.PI/180;
-        
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        
-        return R * c; // distance in meters
-    }
-    
 
+    // Initialize map for owner (location picker)
+    initOwnerMap(containerId, callback) {
+        const paluCenter = [-0.8917, 119.8707];
+        
+        this.map = L.map(containerId).setView(paluCenter, 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(this.map);
+        
+        this.map.on('click', (e) => {
+            const { lat, lng } = e.latlng;
+            
+            if (this.selectedLocation) {
+                this.map.removeLayer(this.selectedLocation);
+            }
+            
+            this.selectedLocation = L.marker([lat, lng])
+                .addTo(this.map)
+                .bindPopup('📍 Lokasi yang dipilih')
+                .openPopup();
+            
+            if (callback) {
+                callback(lat, lng);
+            }
+        });
+        
+        return this.map;
+    }
+    
+    // Initialize map for viewing places
+    initPlacesMap(containerId, places) {
+        const paluCenter = [-0.8917, 119.8707];
+        
+        this.map = L.map(containerId).setView(paluCenter, 12);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(this.map);
+        
+        this.addPlaceMarkers(places);
+        this.addUserLocation();
+        
+        return this.map;
+    }
+    
+    // Add markers for places
+    addPlaceMarkers(places) {
+        this.clearMarkers();
+        
+        places.forEach((place) => {
+            if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
+                const marker = L.marker([place.coordinates.lat, place.coordinates.lng])
+                    .addTo(this.map);
+                
+                const popupContent = `
+                    <div class="map-popup">
+                        <h4>${place.name}</h4>
+                        <p>📍 ${place.location}</p>
+                        <p>🏷️ ${place.category}</p>
+                        <p>👥 ${place.capacity} orang</p>
+                        ${place.description ? `<p>📝 ${place.description}</p>` : ''}
+                        <div class="popup-actions">
+                            <button onclick="bookFromMap('${place._id}')" class="book-btn">
+                                📅 Booking
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                this.markers.push(marker);
+            }
+        });
+        
+        if (this.markers.length > 0) {
+            const group = new L.featureGroup(this.markers);
+            this.map.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+    
+    // Add user location marker
+    async addUserLocation() {
+        try {
+            const userLocation = await MapsService.getCurrentLocation();
+            
+            if (!userLocation.fallback) {
+                this.userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                    icon: L.icon({
+                        iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="blue">
+                                <circle cx="12" cy="12" r="8"/>
+                                <circle cx="12" cy="12" r="3" fill="white"/>
+                            </svg>
+                        `),
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    })
+                }).addTo(this.map);
+                
+                this.userMarker.bindPopup('📍 Lokasi Anda');
+            }
+        } catch (error) {
+            console.log('Could not get user location for map');
+        }
+    }
+    
+    // Clear all markers
+    clearMarkers() {
+        this.markers.forEach(marker => {
+            this.map.removeLayer(marker);
+        });
+        this.markers = [];
+    }
+    
+    // Geocode address and add marker
+    async geocodeAndAddMarker(address) {
+        try {
+            const response = await fetch(`/maps/geocode/${encodeURIComponent(address)}`);
+            const result = await response.json();
+            
+            if (response.ok && result.lat && result.lng) {
+                if (this.selectedLocation) {
+                    this.map.removeLayer(this.selectedLocation);
+                }
+                
+                this.selectedLocation = L.marker([result.lat, result.lng])
+                    .addTo(this.map)
+                    .bindPopup(`📍 ${result.display_name}`)
+                    .openPopup();
+                
+                this.map.setView([result.lat, result.lng], 15);
+                
+                return { lat: result.lat, lng: result.lng };
+            }
+        } catch (error) {
+            console.error('Geocoding failed:', error);
+        }
+        return null;
+    }
+    
+    // Destroy map
+    destroy() {
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
+    }
 }
+
+// Global functions for map popups
+window.bookFromMap = function(placeId) {
+    if (typeof bookPlace === 'function') {
+        bookPlace(placeId);
+    } else {
+        alert('Login untuk booking tempat ini');
+    }
+};
 
 // Export for global use
 window.MapsService = MapsService;
+window.InteractiveMaps = MapsService; // Alias for backward compatibility
